@@ -8,7 +8,7 @@ class ResultCommand : Command() {
         val targetCurrency = "targetCurrency"
         executeInContext(command,
                 "${Commands.RESULT}( (?<$targetCurrency>\\p{javaLetter}+) ?(?<$rates>(,?(\\p{javaLetter}+):(\\d+\\.?\\d*))*))?",
-                "${Commands.RESULT} [target currency <optional>] [rates <optional>] | ${Commands.RESULT} USD EUR:0.86,GBP:0.75") { groups, chatContext ->
+                "${Commands.RESULT} [target currency*] [rates*] | ${Commands.RESULT} USD EUR:0.86,GBP:0.75") { groups, chatContext ->
 
             val currency = groups["targetCurrency"]?.value
             val ratesSet = command.split(" ").getOrNull(2)

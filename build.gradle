@@ -13,6 +13,7 @@ repositories {
     jcenter()
 }
 
+
 dependencies {
     implementation 'org.telegram:telegrambots:3.6.1'
     implementation 'com.google.guava:guava:27.0.1-jre'
@@ -23,8 +24,11 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
+    testCompile 'org.mockito:mockito-core:2.25.1'
+    testCompile 'org.mockito:mockito-junit-jupiter:2.25.1'
+    testCompile "org.junit.jupiter:junit-jupiter-api:5.2.0"
+    testCompile "org.junit.jupiter:junit-jupiter-params:5.2.0"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.2.0"
 }
 
 compileKotlin {

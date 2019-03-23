@@ -4,13 +4,13 @@ object Commands {
 
     const val START = "/start"
 
-    const val NEW_LIST = "/newList"
+    const val NEW_LIST = "/newlist"
 
     const val DEBT = "/debt"
 
-    const val ADD_PARTICIPANT = "/addParticipant"
+    const val ADD_PARTICIPANT = "/addparticipant"
 
-    const val SET_CURRENCY = "/setCurrency"
+    const val SET_CURRENCY = "/setcurrency"
 
     const val RESULT = "/result"
 
