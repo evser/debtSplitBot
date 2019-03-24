@@ -3,6 +3,7 @@ package org.telegram.debtsplitbot.handler
 import org.apache.commons.collections4.CollectionUtils.union
 import org.telegram.debtsplitbot.core.DebtEdge
 import org.telegram.debtsplitbot.core.DebtGraph
+import java.math.BigDecimal
 import java.util.stream.Collectors.toList
 import kotlin.streams.toList
 
@@ -31,13 +32,13 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
         debtsInCurrency.putIfAbsent(currency, DebtGraph(debtsInCurrency.values.first()))
     }
 
-    fun getResults(currencyParam: String?, rates: Map<String, Double>): Map<String, Set<DebtEdge>> {
+    fun getResults(currencyParam: String?, rates: Map<String, BigDecimal>): Map<String, Set<DebtEdge>> {
         val currency = currencyParam?.toUpperCase()
                 ?: return debtsInCurrency.entries
                         .associate { it.key to it.value.normalize() }
 
         if (debtsInCurrency.contains(currency) && rates.isEmpty()) {
-            return mapOf(currentCurrency to debtsInCurrency[currency]!!.normalize())
+            return mapOf(currency to debtsInCurrency[currency]!!.normalize())
         }
 
         val notSpecifiedKeys = LinkedHashSet(debtsInCurrency.keys)

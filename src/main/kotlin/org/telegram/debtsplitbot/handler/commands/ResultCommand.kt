@@ -15,7 +15,7 @@ class ResultCommand : Command() {
                     ?.split(",")
                     ?.associate { rateInfo ->
                         val split = rateInfo.split(":")
-                        split[0] to split[1].toDouble()
+                        split[0] to split[1].toBigDecimal()
                     }.orEmpty()
 
             val debtResults = chatContext.getResults(currency, ratesSet)

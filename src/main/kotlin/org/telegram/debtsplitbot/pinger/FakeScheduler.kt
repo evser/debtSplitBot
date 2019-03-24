@@ -1,9 +1,10 @@
 package org.telegram.debtsplitbot.pinger
 
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 
-
+@Component
 class FakeScheduler {
 
     @Scheduled(fixedRate = 1000 * 60 * 10)

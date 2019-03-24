@@ -1,29 +1,29 @@
 package org.telegram.debtsplitbot.core
 
 import org.apache.commons.collections4.CollectionUtils.union
-import kotlin.math.abs
-import kotlin.math.min
+import java.math.BigDecimal
+import java.math.BigDecimal.ZERO
 
 class DebtGraph(participants: Set<String>) {
 
     private val participants: MutableSet<String>
-    private val debts: MutableList<MutableList<Double>>
+    private val debts: MutableList<MutableList<BigDecimal>>
 
     constructor(debtGraph: DebtGraph) : this(debtGraph.participants)
 
     init {
         this.participants = LinkedHashSet(participants)
-        debts = MutableList(participants.size) { MutableList(participants.size) { 0.0 } }
+        debts = MutableList(participants.size) { MutableList(participants.size) { ZERO } }
     }
 
     fun addParticipant(participant: String) {
-        debts.forEach { list -> list.add(0.0) }
-        debts.add(MutableList(debts.size + 1) { 0.0 })
+        debts.forEach { list -> list.add(ZERO) }
+        debts.add(MutableList(debts.size + 1) { ZERO })
         participants.add(participant)
     }
 
-    fun lend(lender: String, amount: Double) {
-        if (amount <= 0) {
+    fun lend(lender: String, amount: BigDecimal) {
+        if (amount <= ZERO) {
             throw IllegalAccessException("Debt should be greater than 0")
         }
         val lenderIndex = participants.indexOf(lender)
@@ -37,12 +37,12 @@ class DebtGraph(participants: Set<String>) {
         }
     }
 
-    fun lend(lender: String, debtor: String, amount: Double) {
+    fun lend(lender: String, debtor: String, amount: BigDecimal) {
         lend(lender, setOf(debtor), amount)
     }
 
-    fun lend(lender: String, debtors: Set<String>, amount: Double) {
-        if (amount <= 0) {
+    fun lend(lender: String, debtors: Set<String>, amount: BigDecimal) {
+        if (amount <= ZERO) {
             throw IllegalAccessException("Debt should be greater than 0")
         }
         if (!participants.containsAll(union(setOf(lender), debtors))) {
@@ -59,7 +59,8 @@ class DebtGraph(participants: Set<String>) {
     }
 
     fun normalize(): Set<DebtEdge> {
-        val personalBalances = MutableList(debts.size) { 0.0 } // shows balance adjustments in the end (>0 lender)
+        val personalBalances =
+            MutableList(debts.size) { ZERO } // shows balance adjustments in the end (>0 lender)
         val edges = sortedSetOf(
                 compareBy<DebtEdge> { participants.indexOf(it.debtor) }
                         .thenBy { participants.indexOf(it.lender) }
@@ -69,17 +70,17 @@ class DebtGraph(participants: Set<String>) {
             debtors.forEachIndexed { debtorIndex, debt ->
                 if (lenderIndex > debtorIndex) {
                     debts[debtorIndex][lenderIndex] -= debts[lenderIndex][debtorIndex]
-                    debts[lenderIndex][debtorIndex] = 0.0
+                    debts[lenderIndex][debtorIndex] = ZERO
                 }
                 personalBalances[lenderIndex] += debt
                 personalBalances[debtorIndex] -= debt
             }
         }
 
-        while (!personalBalances.all { debt -> debt == 0.0 }) {
+        while (!personalBalances.all { debt -> debt.compareTo(ZERO) == 0 }) {
             val max = personalBalances.withIndex().maxBy { it.value }!!
             val min = personalBalances.withIndex().minBy { it.value }!!
-            val minAbs = min(max.value, abs(min.value))
+            val minAbs = max.value.min(min.value.abs())
 
             edges += DebtEdge(participants.elementAt(min.index), participants.elementAt(max.index), minAbs)
 
