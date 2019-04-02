@@ -1,12 +1,13 @@
 package org.telegram.debtsplitbot.handler
 
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder
 import org.hamcrest.collection.IsIterableContainingInOrder.contains
 import org.hamcrest.collection.IsMapContaining.hasKey
+import org.hamcrest.core.IsCollectionContaining.hasItems
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Answers
 import org.mockito.BDDMockito.given
 import org.mockito.Mock
 import org.mockito.Mockito.times
@@ -27,7 +28,7 @@ import kotlin.random.Random
 @ExtendWith(MockitoExtension::class)
 open class TextMessageHandlerTest {
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     lateinit var message: Message
 
     @Mock
@@ -36,10 +37,12 @@ open class TextMessageHandlerTest {
     lateinit var handler: TextMessageHandler
 
     val chatId = Random.nextLong()
+    val title = Random.nextLong().toString()
     lateinit var acceptedMessage: SendMessage
 
     @BeforeEach
     fun setup() {
+        given(message.chat.title).willReturn(title)
         given(message.chatId).willReturn(chatId)
 
         handler = TextMessageHandler(bot, message)
@@ -50,26 +53,23 @@ open class TextMessageHandlerTest {
     fun shouldCreateNewListPerChat() {
         handleCommand("$NEW_LIST USD John,Ann")
         handleCommand("$DEBT John 4")
-        handleCommand(RESULT)
-        verify(bot, times(2)).execute(acceptedMessage)
         verifyMessage(
-            "USD:\n\n" +
+                "USD (1 transactions):\n\n" +
                     "'Ann' owes 'John' 4.00"
         )
 
 
-        val newChatId = Random.nextLong()
-        given(message.chatId).willReturn(newChatId)
+        val newTitle = Random.nextLong().toString()
+        given(message.chat.title).willReturn(newTitle)
         handleCommand("$NEW_LIST EUR Helen,Kate")
         handleCommand("$DEBT Kate 2")
-        handleCommand(RESULT)
         verify(bot, times(2)).execute(acceptedMessage)
         verifyMessage(
-            "EUR:\n\n" +
+                "EUR (1 transactions):\n\n" +
                     "'Helen' owes 'Kate' 2.00"
         )
 
-        assertThat(chatContexts.keys, containsInAnyOrder(chatId, newChatId))
+        assertThat(chatContexts.keys, hasItems(title, newTitle))
     }
 
     @Test
@@ -79,23 +79,22 @@ open class TextMessageHandlerTest {
         handleCommand("$DEBT Peter John 5.17")
         handleCommand("$DEBT Peter John 1.24")
         handleCommand("$DEBT John 4.32")
-        handleCommand(RESULT)
 
-        verify(bot, times(5)).execute(acceptedMessage)
+        verify(bot, times(1)).execute(acceptedMessage)
         verifyMessage(
-            "USD:\n\n" +
-                    "'John' owes 'Peter' 8.11\n" +
-                    "'Ann' owes 'Peter' 14.66"
+                "USD (4 transactions):\n\n" +
+                        "'John' owes 'Peter' 8.11\n" +
+                        "'Ann' owes 'Peter' 14.66"
 
         )
 
-        assertThat(chatContexts, hasKey(chatId))
+        assertThat(chatContexts, hasKey(title))
         assertThat(
-            chatContexts[chatId]!!.getCurrentDebts().normalize(),
-            contains(
-                DebtEdge("John", "Peter", 8.11.toBigDecimal()),
-                DebtEdge("Ann", "Peter", 14.66.toBigDecimal())
-            )
+                chatContexts[title]!!.getCurrentDebts().normalize(),
+                contains(
+                        DebtEdge("John", "Peter", 8.11.toBigDecimal()),
+                        DebtEdge("Ann", "Peter", 14.66.toBigDecimal())
+                )
         )
     }
 
@@ -113,32 +112,32 @@ open class TextMessageHandlerTest {
         handleCommand("$RESULT EUR")
         handleCommand("$RESULT EUR USD:2")
 
-        verify(bot, times(7)).execute(acceptedMessage)
+        verify(bot, times(4)).execute(acceptedMessage)
 
         verifyMessage(
-            "EUR:\n\n" +
-                    "'Peter' owes 'Ann' 11.00\n" +
-                    "'Helen' owes 'John' 1.00\n" +
-                    "'Helen' owes 'Ann' 6.00", 2
+                "EUR (2 transactions):\n\n" +
+                        "'Peter' owes 'Ann' 11.00\n" +
+                        "'Helen' owes 'John' 1.00\n" +
+                        "'Helen' owes 'Ann' 6.00", 4
         )
         verifyMessage(
-            "USD:\n\n" +
-                    "'John' owes 'Peter' 5.00\n" +
-                    "'Ann' owes 'Peter' 5.00\n" +
-                    "'Helen' owes 'Peter' 5.00"
+                "USD (1 transactions):\n\n" +
+                        "'John' owes 'Peter' 5.00\n" +
+                        "'Ann' owes 'Peter' 5.00\n" +
+                        "'Helen' owes 'Peter' 5.00", 2
         )
 
         verifyMessage(
-            "EUR:\n\n" +
-                    "'John' owes 'Ann' 7.00\n" +
-                    "'John' owes 'Peter' 2.00\n" +
-                    "'Helen' owes 'Peter' 17.00"
+                "EUR:\n\n" +
+                        "'John' owes 'Ann' 7.00\n" +
+                        "'John' owes 'Peter' 2.00\n" +
+                        "'Helen' owes 'Peter' 17.00"
         )
     }
 
     private fun verifyMessage(text: String, times: Int = 1) {
         verify(bot, times(times)).execute(
-            SendMessage(message.chatId, text)
+                SendMessage(message.chatId, text)
         )
     }
 

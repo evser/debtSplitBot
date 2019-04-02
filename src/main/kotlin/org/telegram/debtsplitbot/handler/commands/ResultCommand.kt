@@ -1,7 +1,9 @@
 package org.telegram.debtsplitbot.handler.commands
 
+import org.telegram.debtsplitbot.handler.TextMessageHandler
 
-class ResultCommand : Command() {
+
+class ResultCommand(handler: TextMessageHandler) : Command(handler) {
 
     override fun execute(command: String): Boolean {
         val rates = "rates"
@@ -21,7 +23,8 @@ class ResultCommand : Command() {
             val debtResults = chatContext.getResults(currency, ratesSet)
             debtResults.forEach { debtCurrency, debts ->
                 if (debts.isNotEmpty()) {
-                    handler.sendMessage("$debtCurrency:\n\n${debts.joinToString("\n")}")
+                    val count = if (ratesSet.isNotEmpty()) "" else " (${chatContext.getDebtCounter(debtCurrency)} transactions)"
+                    handler.sendMessage("$debtCurrency$count:\n\n${debts.joinToString("\n")}")
                 } else {
                     handler.sendMessage("No debt found in '$debtCurrency'")
                 }

@@ -1,7 +1,9 @@
 package org.telegram.debtsplitbot.handler.commands
 
+import org.telegram.debtsplitbot.handler.TextMessageHandler
 
-class StartCommand : Command() {
+
+class StartCommand(handler: TextMessageHandler) : Command(handler) {
 
     override fun execute(command: String): Boolean {
         handler.sendMessage(

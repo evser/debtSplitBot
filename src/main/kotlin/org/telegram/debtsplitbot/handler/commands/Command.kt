@@ -3,13 +3,7 @@ package org.telegram.debtsplitbot.handler.commands
 import org.telegram.debtsplitbot.handler.ChatContext
 import org.telegram.debtsplitbot.handler.TextMessageHandler
 
-abstract class Command {
-
-    protected lateinit var handler: TextMessageHandler
-
-    fun init(handler: TextMessageHandler) {
-        this.handler = handler
-    }
+abstract class Command(val handler: TextMessageHandler) {
 
     /**
      * @return successful or not
@@ -17,7 +11,7 @@ abstract class Command {
     abstract fun execute(command: String): Boolean
 
     protected fun executeInContext(command: String, regexStr: String, commandFormat: String, consumer: (groups: MatchGroupCollection, chatContext: ChatContext) -> Unit): Boolean {
-        val chatContext = TextMessageHandler.chatContexts[handler.message.chatId]
+        val chatContext = TextMessageHandler.chatContexts[handler.message.chat.title]
         return if (chatContext != null) {
             execute(command, regexStr, commandFormat) { consumer.invoke(it, chatContext) }
         } else {

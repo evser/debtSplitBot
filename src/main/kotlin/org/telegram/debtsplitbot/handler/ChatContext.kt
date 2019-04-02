@@ -10,16 +10,26 @@ import kotlin.streams.toList
 class ChatContext(currencyParam: String, participants: Set<String>) {
 
     private val debtsInCurrency: MutableMap<String, DebtGraph>
+    private val debtsCountInCurrency: MutableMap<String, Int>
     private var currentCurrency: String
 
     init {
         val currency = currencyParam.toUpperCase()
         this.debtsInCurrency = linkedMapOf(Pair(currency, DebtGraph(participants)))
+        this.debtsCountInCurrency = linkedMapOf(Pair(currency, 0))
         this.currentCurrency = currency
     }
 
     fun getCurrentDebts(): DebtGraph {
         return debtsInCurrency[currentCurrency]!!
+    }
+
+    fun getDebtCounter(currency: String): Int? {
+        return debtsCountInCurrency[currency]
+    }
+
+    fun incrementDebtCounter() {
+        debtsCountInCurrency[currentCurrency] = debtsCountInCurrency[currentCurrency]!!.inc()
     }
 
     fun addParticipant(participant: String) {
@@ -30,6 +40,7 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
         val currency = currencyParam.toUpperCase()
         currentCurrency = currency
         debtsInCurrency.putIfAbsent(currency, DebtGraph(debtsInCurrency.values.first()))
+        debtsCountInCurrency.putIfAbsent(currency, 0)
     }
 
     fun getResults(currencyParam: String?, rates: Map<String, BigDecimal>): Map<String, Set<DebtEdge>> {
@@ -65,5 +76,10 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
 
         return mapOf(currency to targetDebts.normalize())
     }
+
+    override fun toString(): String {
+        return "ChatContext(debtsInCurrency=$debtsInCurrency, debtsCountInCurrency=$debtsCountInCurrency, currentCurrency='$currentCurrency')"
+    }
+
 
 }

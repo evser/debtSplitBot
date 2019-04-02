@@ -89,4 +89,10 @@ class DebtGraph(participants: Set<String>) {
         }
         return edges
     }
+
+    override fun toString(): String {
+        return "DebtGraph(participants=$participants, debts=$debts)"
+    }
+
+
 }
