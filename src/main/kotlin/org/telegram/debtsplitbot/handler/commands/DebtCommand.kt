@@ -17,9 +17,9 @@ class DebtCommand(handler: TextMessageHandler) : Command(handler) {
                 chatContext.getCurrentDebts().lend(groups[lender]!!.value, groups[amount]!!.value.toBigDecimal())
             } else {
                 chatContext.getCurrentDebts().lend(
-                    groups[lender]!!.value,
-                    groups[debtors]!!.value.split(",").toSet(),
-                    groups[amount]!!.value.toBigDecimal()
+                        groups[lender]!!.value,
+                        groups[debtors]!!.value.split(",").toSet(),
+                        groups[amount]!!.value.toBigDecimal()
                 )
             }
             chatContext.incrementDebtCounter()

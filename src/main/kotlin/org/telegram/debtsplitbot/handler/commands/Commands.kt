@@ -16,6 +16,8 @@ object Commands {
 
     const val RESULT = "/result"
 
+    private val RECORDABLE_COMMANDS = listOf(NEW_LIST, DEBT, ADD_PARTICIPANT, SET_CURRENCY)
+
     val values: Map<String, (TextMessageHandler) -> Command> = mapOf(
             START to { handler: TextMessageHandler -> StartCommand(handler) },
             NEW_LIST to { handler: TextMessageHandler -> NewListCommand(handler) },
@@ -24,5 +26,9 @@ object Commands {
             SET_CURRENCY to { handler: TextMessageHandler -> SetCurrencyCommand(handler) },
             RESULT to { handler: TextMessageHandler -> ResultCommand(handler) }
     )
+
+    fun isRecordable(command: String): Boolean {
+        return RECORDABLE_COMMANDS.contains(command)
+    }
 
 }

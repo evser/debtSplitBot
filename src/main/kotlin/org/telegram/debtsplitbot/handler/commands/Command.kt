@@ -2,6 +2,7 @@ package org.telegram.debtsplitbot.handler.commands
 
 import org.telegram.debtsplitbot.handler.ChatContext
 import org.telegram.debtsplitbot.handler.TextMessageHandler
+import org.telegram.debtsplitbot.handler.TextMessageHandler.Companion.chatContexts
 
 abstract class Command(val handler: TextMessageHandler) {
 
@@ -11,7 +12,19 @@ abstract class Command(val handler: TextMessageHandler) {
     abstract fun execute(command: String): Boolean
 
     protected fun executeInContext(command: String, regexStr: String, commandFormat: String, consumer: (groups: MatchGroupCollection, chatContext: ChatContext) -> Unit): Boolean {
-        val chatContext = TextMessageHandler.chatContexts[handler.message.chat.title]
+        val chatId = handler.message.chatId
+        if (!chatContexts.containsKey(chatId) && !handler.isMuted()) {
+            try {
+                handler.mute()
+                handler.commandService.findByChatId(chatId).stream()
+                        .sorted(compareBy { it.timestamp })
+                        .forEach { handler.executeCommand(it.command) }
+            } finally {
+                handler.unmute()
+            }
+        }
+
+        val chatContext = chatContexts[chatId]
         return if (chatContext != null) {
             execute(command, regexStr, commandFormat) { consumer.invoke(it, chatContext) }
         } else {
@@ -31,7 +44,7 @@ abstract class Command(val handler: TextMessageHandler) {
         }
     }
 
-    protected fun sendFormatError(error: String) {
+    private fun sendFormatError(error: String) {
         handler.sendMessage("Please use the right command syntax:\r\n$error")
     }
 }

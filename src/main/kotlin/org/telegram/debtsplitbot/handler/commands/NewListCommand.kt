@@ -13,7 +13,9 @@ class NewListCommand(handler: TextMessageHandler) : Command(handler) {
         return execute(command,
                 "${Commands.NEW_LIST} (?<$currency>\\p{javaLetter}+) (?<$participants>\\p{javaLetter}+(,\\p{javaLetter}+)+)",
                 "${Commands.NEW_LIST} [currency] [names] | ${Commands.NEW_LIST} USD John,Peter,Ann") { groups ->
-            chatContexts[handler.message.chat.title] = ChatContext(groups[currency]!!.value, groups[participants]!!.value.split(",").toSet())
+            val chatId = handler.message.chatId
+            handler.commandService.deleteByChatId(chatId)
+            chatContexts[chatId] = ChatContext(groups[currency]!!.value, groups[participants]!!.value.split(",").toSet())
         }
     }
 

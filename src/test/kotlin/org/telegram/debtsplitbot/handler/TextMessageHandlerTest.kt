@@ -20,9 +20,10 @@ import org.telegram.debtsplitbot.handler.commands.Commands.DEBT
 import org.telegram.debtsplitbot.handler.commands.Commands.NEW_LIST
 import org.telegram.debtsplitbot.handler.commands.Commands.RESULT
 import org.telegram.debtsplitbot.handler.commands.Commands.SET_CURRENCY
-import org.telegram.telegrambots.api.methods.send.SendMessage
-import org.telegram.telegrambots.api.objects.Message
+import org.telegram.debtsplitbot.service.UserCommandService
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.Message
 import kotlin.random.Random
 
 @ExtendWith(MockitoExtension::class)
@@ -34,18 +35,21 @@ open class TextMessageHandlerTest {
     @Mock
     lateinit var bot: TelegramLongPollingBot
 
+    @Mock
+    lateinit var service: UserCommandService
+
     lateinit var handler: TextMessageHandler
 
     val chatId = Random.nextLong()
-    val title = Random.nextLong().toString()
     lateinit var acceptedMessage: SendMessage
 
     @BeforeEach
     fun setup() {
-        given(message.chat.title).willReturn(title)
         given(message.chatId).willReturn(chatId)
+        given(message.chat.title).willReturn("title")
+        given(message.hasText()).willReturn(true)
 
-        handler = TextMessageHandler(bot, message)
+        handler = TextMessageHandler(bot, message, service)
         acceptedMessage = SendMessage(chatId, "Accepted.")
     }
 
@@ -57,19 +61,19 @@ open class TextMessageHandlerTest {
                 "USD (1 transactions):\n\n" +
                     "'Ann' owes 'John' 4.00"
         )
+        verify(bot).execute(acceptedMessage)
 
-
-        val newTitle = Random.nextLong().toString()
-        given(message.chat.title).willReturn(newTitle)
+        val newChatId = Random.nextLong()
+        given(message.chatId).willReturn(newChatId)
         handleCommand("$NEW_LIST EUR Helen,Kate")
         handleCommand("$DEBT Kate 2")
-        verify(bot, times(2)).execute(acceptedMessage)
+        verify(bot).execute(acceptedMessage)
         verifyMessage(
                 "EUR (1 transactions):\n\n" +
                     "'Helen' owes 'Kate' 2.00"
         )
 
-        assertThat(chatContexts.keys, hasItems(title, newTitle))
+        assertThat(chatContexts.keys, hasItems(chatId, newChatId))
     }
 
     @Test
@@ -88,9 +92,9 @@ open class TextMessageHandlerTest {
 
         )
 
-        assertThat(chatContexts, hasKey(title))
+        assertThat(chatContexts, hasKey(chatId))
         assertThat(
-                chatContexts[title]!!.getCurrentDebts().normalize(),
+                chatContexts[chatId]!!.getCurrentDebts().normalize(),
                 contains(
                         DebtEdge("John", "Peter", 8.11.toBigDecimal()),
                         DebtEdge("Ann", "Peter", 14.66.toBigDecimal())

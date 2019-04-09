@@ -1,60 +1,56 @@
 package org.telegram.debtsplitbot.handler
 
 import org.telegram.debtsplitbot.handler.commands.Commands
-import org.telegram.telegrambots.api.objects.Message
+import org.telegram.debtsplitbot.repository.entity.UserCommand
+import org.telegram.debtsplitbot.service.UserCommandService
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.objects.Message
+import java.time.LocalDateTime
 
-class TextMessageHandler(bot: TelegramLongPollingBot, message: Message) : MessageHandler(bot, message) {
+class TextMessageHandler(bot: TelegramLongPollingBot, message: Message, val commandService: UserCommandService) : MessageHandler(bot, message) {
 
     override fun handle() {
-        val command = (message.text ?: message.sticker.emoji).replace("@${bot.botUsername}", "").trim()
+        if (!message.hasText()) {
+            return
+        }
+
+        val command = message.text.replace("@${bot.botUsername}", "").trim()
+        if (command.contains("@")) {
+            return
+        }
+
         if (message.chat?.title == null) {
             sendMessage("This bot works only in group chats.")
         } else {
-            /////////////  debug area
-            val prevChatId = chatIds.putIfAbsent(message.chat.title, message.chatId)
-            if (prevChatId != null && message.chatId != prevChatId) {
-                sendMessage("Chat id has changed!!!")
-                return
-            }
-            if (command == "/logs") {
-                sendMessage("Chat contexts\n$chatContexts")
-                sendMessage("Chat ids\n$chatIds")
-                return
-            }
-////////////////////// <end of>  debug area
-
-            Commands.values.entries.stream()
-                    .filter { command.startsWith(it.key) }
-                    .findFirst()
-                    .map { it.value }
-                    .ifPresent {
-                        try {
-                            if (it(this).execute(command)) {
-                                sendMessage("Accepted.")
-                            }
-                        } catch (ex: IllegalArgumentException) {
-                            sendMessage(ex.message ?: "Some error occurred.")
-                            if (ex.message == null) {
-                                ex.printStackTrace()
-                            }
-                        } catch (ex: Throwable) {
-                            sendMessage("Some error occurred.")
-                            ex.printStackTrace()
-                        }
-                    }
+            executeCommand(command)
         }
     }
 
+    fun executeCommand(command: String) {
+        Commands.values.entries.stream()
+                .filter { command.startsWith(it.key) }
+                .findFirst()
+                .ifPresent {
+                    try {
+                        if (it.value(this).execute(command)) {
+                            sendMessage("Accepted.")
+                        }
+                        if (Commands.isRecordable(it.key)) {
+                            commandService.save(UserCommand(message.chatId, command, LocalDateTime.now()))
+                        }
+                    } catch (ex: IllegalArgumentException) {
+                        sendMessage(ex.message ?: "Some error occurred.")
+                        if (ex.message == null) {
+                            ex.printStackTrace()
+                        }
+                    } catch (ex: Throwable) {
+                        sendMessage("Some error occurred.")
+                        ex.printStackTrace()
+                    }
+                }
+    }
 
     companion object {
-        val chatContexts: MutableMap<String, ChatContext> = mutableMapOf()
-        /// debug area
-        val chatIds: MutableMap<String, Long> = mutableMapOf()
-        /// <end of>  debug area
-
-        fun shouldBeUsed(message: Message): Boolean {
-            return message.hasText()
-        }
+        val chatContexts: MutableMap<Long, ChatContext> = mutableMapOf()
     }
 }
