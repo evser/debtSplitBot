@@ -11,7 +11,7 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
 
     private val debtsInCurrency: MutableMap<String, DebtGraph>
     private val debtsCountInCurrency: MutableMap<String, Int>
-    private var currentCurrency: String
+    var currentCurrency: String
 
     init {
         val currency = currencyParam.toUpperCase()
