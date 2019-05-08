@@ -26,7 +26,7 @@ class DebtCommand(handler: TextMessageHandler) : Command(handler) {
         }
         if (showResult) {
             val resultCommand = ResultCommand(handler)
-            resultCommand.execute(Commands.RESULT + " $chatContext.currentCurrency")
+            resultCommand.execute(Commands.RESULT + " ${TextMessageHandler.chatContexts[handler.message.chatId].currentCurrency}")
         }
 
         return false
