@@ -4,14 +4,16 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.telegram.debtsplitbot.handler.TextMessageHandler
 import java.time.LocalDateTime
 
 @RestController
 class FakeController {
 
     @GetMapping("/")
-    fun fakeMapping() {
+    fun fakeMapping(): String {
         println("ping ${LocalDateTime.now()}")
+        return TextMessageHandler.chatContexts.toString()
     }
 
     @GetMapping("/stop")

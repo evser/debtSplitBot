@@ -20,6 +20,7 @@ import org.telegram.debtsplitbot.handler.commands.Commands.DEBT
 import org.telegram.debtsplitbot.handler.commands.Commands.NEW_LIST
 import org.telegram.debtsplitbot.handler.commands.Commands.RESULT
 import org.telegram.debtsplitbot.handler.commands.Commands.SET_CURRENCY
+import org.telegram.debtsplitbot.handler.commands.Commands.SPLIT
 import org.telegram.debtsplitbot.service.UserCommandService
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
@@ -82,9 +83,9 @@ open class TextMessageHandlerTest {
         handleCommand("$DEBT Peter John,Ann 10.34")
         handleCommand("$DEBT Peter John 5.17")
         handleCommand("$DEBT Peter John 1.24")
-        handleCommand("$DEBT John 4.32")
+        handleCommand("$SPLIT John 12.96")
 
-        verify(bot, times(1)).execute(acceptedMessage)
+        verify(bot).execute(acceptedMessage)
         verifyMessage(
                 "USD (4 transactions):\n\n" +
                         "'John' owes 'Peter' 8.11\n" +

@@ -35,7 +35,7 @@ class TextMessageHandler(bot: TelegramLongPollingBot, message: Message, val comm
                         if (it.value(this).execute(command)) {
                             sendMessage("Accepted.")
                         }
-                        if (Commands.isRecordable(it.key)) {
+                        if (Commands.isPersistable(it.key)) {
                             commandService.save(UserCommand(message.chatId, command, LocalDateTime.now()))
                         }
                     } catch (ex: IllegalArgumentException) {

@@ -22,6 +22,10 @@ class DebtGraph(participants: Set<String>) {
         participants.add(participant)
     }
 
+    fun getParticipantsCount(): Int {
+        return participants.size
+    }
+
     fun lend(lender: String, amount: BigDecimal) {
         if (amount <= ZERO) {
             throw IllegalAccessException("Debt should be greater than 0")

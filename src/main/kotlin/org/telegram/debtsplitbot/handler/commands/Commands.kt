@@ -10,25 +10,31 @@ object Commands {
 
     const val DEBT = "/debt"
 
+    const val SPLIT = "/split"
+
     const val ADD_PARTICIPANT = "/addparticipant"
 
     const val SET_CURRENCY = "/setcurrency"
 
     const val RESULT = "/result"
 
-    private val RECORDABLE_COMMANDS = listOf(NEW_LIST, DEBT, ADD_PARTICIPANT, SET_CURRENCY)
+    private val PERSISTABLE_COMMANDS = listOf(NEW_LIST, DEBT, SPLIT, ADD_PARTICIPANT, SET_CURRENCY)
 
     val values: Map<String, (TextMessageHandler) -> Command> = mapOf(
-            START to { handler: TextMessageHandler -> StartCommand(handler) },
-            NEW_LIST to { handler: TextMessageHandler -> NewListCommand(handler) },
-            DEBT to { handler: TextMessageHandler -> DebtCommand(handler) },
-            ADD_PARTICIPANT to { handler: TextMessageHandler -> AddParticipantCommand(handler) },
-            SET_CURRENCY to { handler: TextMessageHandler -> SetCurrencyCommand(handler) },
-            RESULT to { handler: TextMessageHandler -> ResultCommand(handler) }
+        START to { handler: TextMessageHandler -> StartCommand(handler) },
+        NEW_LIST to { handler: TextMessageHandler -> NewListCommand(handler) },
+        DEBT to { handler: TextMessageHandler -> DebtCommand(handler) },
+        SPLIT to { handler: TextMessageHandler -> SplitCommand(handler) },
+        ADD_PARTICIPANT to { handler: TextMessageHandler -> AddParticipantCommand(handler) },
+        SET_CURRENCY to { handler: TextMessageHandler -> SetCurrencyCommand(handler) },
+        RESULT to { handler: TextMessageHandler -> ResultCommand(handler) }
     )
 
-    fun isRecordable(command: String): Boolean {
-        return RECORDABLE_COMMANDS.contains(command)
+    /**
+     * @return true if should be logged to DB
+     */
+    fun isPersistable(command: String): Boolean {
+        return PERSISTABLE_COMMANDS.contains(command)
     }
 
 }

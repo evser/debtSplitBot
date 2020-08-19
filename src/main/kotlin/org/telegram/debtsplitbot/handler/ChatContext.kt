@@ -7,7 +7,11 @@ import java.math.BigDecimal
 import java.util.stream.Collectors.toList
 import kotlin.streams.toList
 
-class ChatContext(currencyParam: String, participants: Set<String>) {
+class ChatContext(
+    currencyParam: String,
+    participants: Set<String>,
+    val title: String
+) {
 
     private val debtsInCurrency: MutableMap<String, DebtGraph>
     private val debtsCountInCurrency: MutableMap<String, Int>
@@ -36,6 +40,10 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
         debtsInCurrency.forEach { _, debts -> debts.addParticipant(participant) }
     }
 
+    fun getParticipantsCount(): Int {
+        return debtsInCurrency[currentCurrency]!!.getParticipantsCount()
+    }
+
     fun setCurrency(currencyParam: String) {
         val currency = currencyParam.toUpperCase()
         currentCurrency = currency
@@ -45,8 +53,8 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
 
     fun getResults(currencyParam: String?, rates: Map<String, BigDecimal>): Map<String, Set<DebtEdge>> {
         val currency = currencyParam?.toUpperCase()
-                ?: return debtsInCurrency.entries
-                        .associate { it.key to it.value.normalize() }
+            ?: return debtsInCurrency.entries
+                .associate { it.key to it.value.normalize() }
 
         if (debtsInCurrency.contains(currency) && rates.isEmpty()) {
             return mapOf(currency to debtsInCurrency[currency]!!.normalize())
@@ -59,17 +67,17 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
         }
 
         val debtsInTargetCurrency = debtsInCurrency.entries.stream()
-                .map { (debtCurrency, debt) ->
-                    if (debtCurrency == currency) {
-                        debt.normalize()
-                    } else {
-                        debt.normalize().stream()
-                                .peek { edge -> edge.debt *= rates.getValue(debtCurrency) }
-                                .toList()
-                    }
+            .map { (debtCurrency, debt) ->
+                if (debtCurrency == currency) {
+                    debt.normalize()
+                } else {
+                    debt.normalize().stream()
+                        .peek { edge -> edge.debt *= rates.getValue(debtCurrency) }
+                        .toList()
                 }
-                .flatMap { it.stream() }
-                .collect(toList())
+            }
+            .flatMap { it.stream() }
+            .collect(toList())
 
         val targetDebts = DebtGraph(getCurrentDebts())
         debtsInTargetCurrency.forEach { edge -> targetDebts.lend(edge.lender, edge.debtor, edge.debt) }
@@ -78,7 +86,7 @@ class ChatContext(currencyParam: String, participants: Set<String>) {
     }
 
     override fun toString(): String {
-        return "ChatContext(debtsInCurrency=$debtsInCurrency, debtsCountInCurrency=$debtsCountInCurrency, currentCurrency='$currentCurrency')"
+        return "ChatContext(debtsInCurrency=$debtsInCurrency, debtsCountInCurrency=$debtsCountInCurrency, currentCurrency='$currentCurrency', title=$title)"
     }
 
 
