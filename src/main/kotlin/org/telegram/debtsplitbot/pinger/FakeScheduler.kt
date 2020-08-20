@@ -9,7 +9,6 @@ class FakeScheduler {
 
     @Scheduled(fixedRate = 1000 * 60 * 10)
     fun fakeRequestSender() {
-        System.gc()
         try {
             RestTemplate().getForObject(BASE_URL, Any::class.java)
         } catch (ex: Exception) {
