@@ -16,7 +16,9 @@ class NewListCommand(handler: TextMessageHandler) : Command(handler) {
             "${Commands.NEW_LIST} [currency] [names] | ${Commands.NEW_LIST} USD John,Peter,Ann"
         ) { groups ->
             val chatId = handler.message.chatId
-            handler.commandService.deleteByChatId(chatId)
+            if (!handler.isRecoveringFromRepository()) {
+                handler.commandService.deleteByChatId(chatId)
+            }
             chatContexts[chatId] = ChatContext(
                 groups[currency]!!.value,
                 groups[participants]!!.value.split(",").toSet(),

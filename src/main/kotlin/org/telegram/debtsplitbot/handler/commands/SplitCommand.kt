@@ -1,6 +1,7 @@
 package org.telegram.debtsplitbot.handler.commands
 
 import org.telegram.debtsplitbot.handler.TextMessageHandler
+import java.math.RoundingMode
 
 
 class SplitCommand(handler: TextMessageHandler) : Command(handler) {
@@ -16,7 +17,11 @@ class SplitCommand(handler: TextMessageHandler) : Command(handler) {
 
             chatContext.getCurrentDebts().lend(
                 groups[lender]!!.value,
-                groups[amount]!!.value.toBigDecimal() / TextMessageHandler.chatContexts[handler.message.chatId]!!.getParticipantsCount().toBigDecimal()
+                groups[amount]!!.value.toBigDecimal().divide(
+                    TextMessageHandler.chatContexts[handler.message.chatId]!!.getParticipantsCount().toBigDecimal(),
+                    2,
+                    RoundingMode.HALF_UP
+                )
             )
             chatContext.incrementDebtCounter()
         }

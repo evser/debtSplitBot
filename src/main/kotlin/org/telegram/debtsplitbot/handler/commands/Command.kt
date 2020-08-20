@@ -13,14 +13,15 @@ abstract class Command(val handler: TextMessageHandler) {
 
     protected fun executeInContext(command: String, regexStr: String, commandFormat: String, consumer: (groups: MatchGroupCollection, chatContext: ChatContext) -> Unit): Boolean {
         val chatId = handler.message.chatId
-        if (!chatContexts.containsKey(chatId) && !handler.isMuted()) {
+        if (!chatContexts.containsKey(chatId) && !handler.isRecoveringFromRepository()) {
             try {
-                handler.mute()
+                handler.startRecoveryFromRepository()
                 handler.commandService.findByChatId(chatId).stream()
                         .sorted(compareBy { it.timestamp })
                         .forEach { handler.executeCommand(it.command) }
+
             } finally {
-                handler.unmute()
+                handler.finishRecoveryFromRepository()
             }
         }
 

@@ -13,7 +13,7 @@ abstract class MessageHandler(val bot: TelegramLongPollingBot, val message: Mess
     var muted: AtomicBoolean = AtomicBoolean()
 
     fun sendMessage(text: String) {
-        if (isMuted()) {
+        if (isRecoveringFromRepository()) {
             return
         }
 
@@ -25,15 +25,15 @@ abstract class MessageHandler(val bot: TelegramLongPollingBot, val message: Mess
         }
     }
 
-    fun isMuted(): Boolean {
+    fun isRecoveringFromRepository(): Boolean {
         return muted.get()
     }
 
-    fun mute() {
+    fun startRecoveryFromRepository() {
         muted.set(true)
     }
 
-    fun unmute() {
+    fun finishRecoveryFromRepository() {
         muted.set(false)
     }
 
