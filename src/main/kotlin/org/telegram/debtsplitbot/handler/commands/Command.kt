@@ -7,7 +7,7 @@ import org.telegram.debtsplitbot.handler.TextMessageHandler.Companion.chatContex
 abstract class Command(val handler: TextMessageHandler) {
 
     /**
-     * @return successful or not
+     * @return true if "Accepted." message should be written
      */
     abstract fun execute(command: String): Boolean
 

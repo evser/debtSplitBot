@@ -28,27 +28,26 @@ class TextMessageHandler(bot: TelegramLongPollingBot, message: Message, val comm
 
     fun executeCommand(command: String) {
         Commands.values.entries.stream()
-                .filter { command.startsWith(it.key) }
-                .findFirst()
-                .ifPresent {
-                    try {
-                        if (it.value(this).execute(command)) {
-                            sendMessage("Accepted.")
-
-                            if (Commands.isPersistable(it.key) && !isRecoveringFromRepository()) {
-                                commandService.save(UserCommand(message.chatId, command, LocalDateTime.now()))
-                            }
-                        }
-                    } catch (ex: IllegalArgumentException) {
-                        sendMessage(ex.message ?: "Some error occurred.")
-                        if (ex.message == null) {
-                            ex.printStackTrace()
-                        }
-                    } catch (ex: Throwable) {
-                        sendMessage("Some error occurred.")
+            .filter { command.startsWith(it.key) }
+            .findFirst()
+            .ifPresent {
+                try {
+                    if (it.value(this).execute(command)) {
+                        sendMessage("Accepted.")
+                    }
+                    if (Commands.isPersistable(it.key) && !isRecoveringFromRepository()) {
+                        commandService.save(UserCommand(message.chatId, command, LocalDateTime.now()))
+                    }
+                } catch (ex: IllegalArgumentException) {
+                    sendMessage(ex.message ?: "Some error occurred.")
+                    if (ex.message == null) {
                         ex.printStackTrace()
                     }
+                } catch (ex: Throwable) {
+                    sendMessage("Some error occurred.")
+                    ex.printStackTrace()
                 }
+            }
     }
 
     companion object {
