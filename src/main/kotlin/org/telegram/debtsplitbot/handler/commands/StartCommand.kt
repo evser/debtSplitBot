@@ -19,5 +19,7 @@ class StartCommand(handler: TextMessageHandler) : Command(handler) {
         return false
     }
 
-
+    override fun isPersistent(): Boolean {
+        return false
+    }
 }

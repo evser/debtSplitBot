@@ -9,6 +9,8 @@ import java.time.LocalDateTime
 
 class TextMessageHandler(bot: TelegramLongPollingBot, message: Message, val commandService: UserCommandService) : MessageHandler(bot, message) {
 
+    var isRevertMode: Boolean = false
+
     override fun handle() {
         if (!message.hasText()) {
             return
@@ -22,30 +24,36 @@ class TextMessageHandler(bot: TelegramLongPollingBot, message: Message, val comm
         if (message.chat?.title == null) {
             sendMessage("This bot works only in group chats.")
         } else {
-            executeCommand(command)
+            try {
+                executeCommand(command)
+            } catch (ex: IllegalArgumentException) {
+                sendMessage(ex.message ?: "Some error occurred.")
+                if (ex.message == null) {
+                    ex.printStackTrace()
+                }
+            } catch (ex: Throwable) {
+                sendMessage("Some error occurred.")
+                ex.printStackTrace()
+            }
         }
     }
 
-    fun executeCommand(command: String) {
+    fun executeCommand(commandStr: String) {
         Commands.values.entries.stream()
-            .filter { command.startsWith(it.key) }
+            .filter { commandStr.startsWith(it.key) }
             .findFirst()
             .ifPresent {
-                try {
-                    if (it.value(this).execute(command)) {
-                        sendMessage("Accepted.")
-                    }
-                    if (Commands.isPersistable(it.key) && !isRecoveringFromRepository()) {
-                        commandService.save(UserCommand(message.chatId, command, LocalDateTime.now()))
-                    }
-                } catch (ex: IllegalArgumentException) {
-                    sendMessage(ex.message ?: "Some error occurred.")
-                    if (ex.message == null) {
-                        ex.printStackTrace()
-                    }
-                } catch (ex: Throwable) {
-                    sendMessage("Some error occurred.")
-                    ex.printStackTrace()
+                val command = it.value(this)
+                if (isRevertMode && !command.isRevertible()) {
+                    throw IllegalArgumentException("This command is not revertible: {$commandStr}")
+                }
+
+                if (command.execute(commandStr)) {
+                    sendMessage("Accepted.")
+                }
+
+                if (command.isPersistent() && !isRecoveringFromRepository() && !isRevertMode) {
+                    commandService.save(UserCommand(message.chatId, commandStr, LocalDateTime.now()))
                 }
             }
     }

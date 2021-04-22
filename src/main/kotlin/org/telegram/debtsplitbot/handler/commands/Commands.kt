@@ -18,7 +18,7 @@ object Commands {
 
     const val RESULT = "/result"
 
-    private val PERSISTABLE_COMMANDS = listOf(NEW_LIST, DEBT, SPLIT, ADD_PARTICIPANT, SET_CURRENCY)
+    const val REVERT = "/revert"
 
     val values: Map<String, (TextMessageHandler) -> Command> = mapOf(
         START to { handler: TextMessageHandler -> StartCommand(handler) },
@@ -27,14 +27,8 @@ object Commands {
         SPLIT to { handler: TextMessageHandler -> SplitCommand(handler) },
         ADD_PARTICIPANT to { handler: TextMessageHandler -> AddParticipantCommand(handler) },
         SET_CURRENCY to { handler: TextMessageHandler -> SetCurrencyCommand(handler) },
-        RESULT to { handler: TextMessageHandler -> ResultCommand(handler) }
+        RESULT to { handler: TextMessageHandler -> ResultCommand(handler) },
+        REVERT to { handler: TextMessageHandler -> RevertCommand(handler) }
     )
-
-    /**
-     * @return true if should be logged to DB
-     */
-    fun isPersistable(command: String): Boolean {
-        return PERSISTABLE_COMMANDS.contains(command)
-    }
-
+    
 }

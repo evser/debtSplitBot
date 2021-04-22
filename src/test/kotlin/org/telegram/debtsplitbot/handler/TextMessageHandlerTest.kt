@@ -120,10 +120,10 @@ open class TextMessageHandlerTest {
         verify(bot, times(4)).execute(acceptedMessage)
 
         verifyMessage(
-                "EUR (2 transactions):\n\n" +
-                        "'Peter' owes 'Ann' 11.00\n" +
-                        "'Helen' owes 'John' 1.00\n" +
-                        "'Helen' owes 'Ann' 6.00", 4
+            "EUR (2 transactions):\n\n" +
+                    "'Peter' owes 'Ann' 11.00\n" +
+                    "'Helen' owes 'John' 1.00\n" +
+                    "'Helen' owes 'Ann' 6.00", 3 // the last debt + x2 results
         )
         verifyMessage(
                 "USD (1 transactions):\n\n" +

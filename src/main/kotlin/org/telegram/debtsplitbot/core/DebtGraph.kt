@@ -26,9 +26,9 @@ class DebtGraph(participants: Set<String>) {
         return participants.size
     }
 
-    fun lend(lender: String, amount: BigDecimal) {
-        if (amount <= ZERO) {
-            throw IllegalAccessException("Debt should be greater than 0")
+    fun lend(lender: String, amount: BigDecimal, allowNegative: Boolean = false) {
+        if (amount <= ZERO && !allowNegative) {
+            throw IllegalArgumentException("Debt should be greater than 0")
         }
         val lenderIndex = participants.indexOf(lender)
         if (lenderIndex == -1) {
@@ -45,15 +45,15 @@ class DebtGraph(participants: Set<String>) {
         lend(lender, setOf(debtor), amount)
     }
 
-    fun lend(lender: String, debtors: Set<String>, amount: BigDecimal) {
-        if (amount <= ZERO) {
-            throw IllegalAccessException("Debt should be greater than 0")
+    fun lend(lender: String, debtors: Set<String>, amount: BigDecimal, allowNegative: Boolean = false) {
+        if (amount <= ZERO && !allowNegative) {
+            throw IllegalArgumentException("Debt should be greater than 0")
         }
         if (!participants.containsAll(union(setOf(lender), debtors))) {
             throw IllegalArgumentException("A person is not registered.");
         }
         if (debtors.contains(lender)) {
-            throw java.lang.IllegalArgumentException("Debtors should not contain a lender");
+            throw IllegalArgumentException("Debtors should not contain a lender");
         }
 
         val lenderIndex = participants.indexOf(lender)

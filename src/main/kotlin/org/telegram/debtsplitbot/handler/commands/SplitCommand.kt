@@ -15,13 +15,19 @@ class SplitCommand(handler: TextMessageHandler) : Command(handler) {
             "${Commands.SPLIT} [lender] [amount] | ${Commands.SPLIT} John 100"
         ) { groups, chatContext ->
 
+            var money = groups[amount]!!.value.toBigDecimal();
+            if (handler.isRevertMode) {
+                money = money.negate()
+            }
+
             chatContext.getCurrentDebts().lend(
                 groups[lender]!!.value,
-                groups[amount]!!.value.toBigDecimal().divide(
+                money.divide(
                     TextMessageHandler.chatContexts[handler.message.chatId]!!.getParticipantsCount().toBigDecimal(),
                     2,
                     RoundingMode.HALF_UP
-                )
+                ),
+                handler.isRevertMode
             )
             chatContext.incrementDebtCounter()
         }
@@ -33,5 +39,8 @@ class SplitCommand(handler: TextMessageHandler) : Command(handler) {
         return false
     }
 
+    override fun isRevertible(): Boolean {
+        return true
+    }
 
 }

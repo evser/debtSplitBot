@@ -21,4 +21,5 @@ class UserCommandServiceImpl(private val repository: UserCommandRepository) : Us
     override fun deleteByChatId(chatId: Long) {
         repository.deleteByChatId(chatId)
     }
+
 }

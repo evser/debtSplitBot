@@ -4,6 +4,7 @@ import org.telegram.debtsplitbot.handler.ChatContext
 import org.telegram.debtsplitbot.handler.TextMessageHandler
 import org.telegram.debtsplitbot.handler.TextMessageHandler.Companion.chatContexts
 
+
 abstract class Command(val handler: TextMessageHandler) {
 
     /**
@@ -11,14 +12,17 @@ abstract class Command(val handler: TextMessageHandler) {
      */
     abstract fun execute(command: String): Boolean
 
+    open fun isRevertible(): Boolean = false
+    open fun isPersistent(): Boolean = true
+
     protected fun executeInContext(command: String, regexStr: String, commandFormat: String, consumer: (groups: MatchGroupCollection, chatContext: ChatContext) -> Unit): Boolean {
         val chatId = handler.message.chatId
         if (!chatContexts.containsKey(chatId) && !handler.isRecoveringFromRepository()) {
             try {
                 handler.startRecoveryFromRepository()
                 handler.commandService.findByChatId(chatId).stream()
-                        .sorted(compareBy { it.timestamp })
-                        .forEach { handler.executeCommand(it.command) }
+                    .sorted(compareBy { it.timestamp })
+                    .forEach { handler.executeCommand(it.command) }
 
             } finally {
                 handler.finishRecoveryFromRepository()
@@ -27,7 +31,11 @@ abstract class Command(val handler: TextMessageHandler) {
 
         val chatContext = chatContexts[chatId]
         return if (chatContext != null) {
-            execute(command, regexStr, commandFormat) { consumer.invoke(it, chatContext) }
+            val result = execute(command, regexStr, commandFormat) { consumer.invoke(it, chatContext) }
+            if (isPersistent() && !handler.isRevertMode) {
+                chatContext.addCommand(command)
+            }
+            result
         } else {
             handler.sendMessage("Please create list using ${Commands.NEW_LIST} first.")
             false

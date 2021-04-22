@@ -10,18 +10,24 @@ import kotlin.streams.toList
 class ChatContext(
     currencyParam: String,
     participants: Set<String>,
-    val title: String
+    private val title: String
 ) {
 
     private val debtsInCurrency: MutableMap<String, DebtGraph>
     private val debtsCountInCurrency: MutableMap<String, Int>
     var currentCurrency: String
+    val commands: MutableList<String>
 
     init {
         val currency = currencyParam.toUpperCase()
         this.debtsInCurrency = linkedMapOf(Pair(currency, DebtGraph(participants)))
         this.debtsCountInCurrency = linkedMapOf(Pair(currency, 0))
         this.currentCurrency = currency
+        this.commands = ArrayList()
+    }
+
+    fun addCommand(command: String) {
+        commands.add(command)
     }
 
     fun getCurrentDebts(): DebtGraph {
