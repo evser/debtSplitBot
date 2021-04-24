@@ -14,7 +14,7 @@ class StartCommand(handler: TextMessageHandler) : Command(handler) {
                     "/split - split a whole debt:\n/split [lender] [amount] | /split John 100\n\n" +
                     "/addparticipant - add a participant to the list:\n/addparticipant [participant] | /addparticipant Kate \n\n" +
                     "/setcurrency - switch between currencies or create one if does not exist:\n/setcurrency [currency] | /setcurrency EUR\n\n" +
-                    "/result - see results:\n/result  [target currency*] [rates*] | /result | /result USD | /result USD EUR:0.86,GBP:0.75"
+                    "/result - see results:\n/result  [target currency*] [rates*] | /result | /result USD EUR:1.2,РУБ:0.4"
         )
         return false
     }
